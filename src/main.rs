@@ -88,21 +88,24 @@ fn find_needle_in_haystack<'a>(search: &str,
     }
 }
 
+fn find_in_documentation(search: &str, doc_path: &Path) {
+    if let Ok(docs) = read_documentation(doc_path) {
+        let results = find_needle_in_haystack(search, &docs);
+        for result in results {
+            print_value(result);
+        }
+    }
+}
+
 fn search_for(search: &str) -> Result<(), Box<Error>> {
     println!("Searching for: {}", search);
     println!("");
 
     let cwd = env::current_dir()?;
     run_on_all_the_documentation(&cwd,
-                                 &|doc_path| if let Ok(docs) =
-        read_documentation(doc_path) {
-                                      let results =
-                                          find_needle_in_haystack(search,
-                                                                  &docs);
-                                      for result in results {
-                                          print_value(result);
-                                      }
-                                  });
+                                 &|doc_path| {
+                                     find_in_documentation(search, doc_path)
+                                 });
     Ok(())
 }
 
