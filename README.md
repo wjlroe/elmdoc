@@ -4,6 +4,8 @@ So you want to do some [Elm](http://elm-lang.org/) but you're on the train, or
 without Internet somehow. How do you read all the docs for the packages you're
 using? Elmdoc. That's how.
 
+![Screenshot of elmdoc searching for pair](search_pair.png)
+
 ## Installation
 
 (This will no doubt be easier when this is released properly, but for now...)
