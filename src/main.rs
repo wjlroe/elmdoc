@@ -50,6 +50,18 @@ fn read_documentation(path: &Path) -> Result<Value, Box<Error>> {
     Ok(v)
 }
 
+fn go_into_arrays<'a>(search: &str, value: &'a Value) -> Vec<&'a Value> {
+    use serde_json::Value::*;
+    if let Array(ref json_array) = *value {
+        json_array
+            .iter()
+            .flat_map(|ja| find_needle_in_haystack(search, ja))
+            .collect::<Vec<_>>()
+    } else {
+        vec![]
+    }
+}
+
 fn find_needle_in_haystack<'a>(search: &str,
                                haystack: &'a Value)
                                -> Vec<&'a Value> {
@@ -62,19 +74,7 @@ fn find_needle_in_haystack<'a>(search: &str,
             } else {
                 hay_map
                     .iter()
-                       .flat_map(|(_, value)| {
-                           match *value {
-                               Array(ref json_array) => {
-                                   json_array
-                                       .iter()
-                                       .flat_map(|ja| {
-                                           find_needle_in_haystack(search, ja)
-                                       })
-                                       .collect::<Vec<_>>()
-                               }
-                               _ => vec![],
-                           }  
-                       })
+                    .flat_map(|(_, value)| go_into_arrays(search, value))
                     .collect::<Vec<_>>()
             }
         }
@@ -96,14 +96,13 @@ fn search_for(search: &str) -> Result<(), Box<Error>> {
     run_on_all_the_documentation(&cwd,
                                  &|doc_path| if let Ok(docs) =
         read_documentation(doc_path) {
-                                     let results =
-                                         find_needle_in_haystack(search, &docs);
-                                     for result in results {
-                                         print_value(result);
-                                     }
-                                 });
-    // let path = "C:/Users/micro/Code/play/games/OneRoom/elm-stuff/packages/evancz/elm-graphics/1.0.1/documentation.json";
-    // let graphics = read_documentation(Path::new(path))?;
+                                      let results =
+                                          find_needle_in_haystack(search,
+                                                                  &docs);
+                                      for result in results {
+                                          print_value(result);
+                                      }
+                                  });
     Ok(())
 }
 
