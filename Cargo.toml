@@ -1,0 +1,8 @@
+[package]
+name = "elmdoc"
+version = "0.1.0"
+authors = ["William Roe <git@wjlr.org.uk>"]
+
+[dependencies]
+serde_json = "1.0.2"
+term = "*"
