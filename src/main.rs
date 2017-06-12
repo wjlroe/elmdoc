@@ -31,13 +31,16 @@ fn print_value(value: &Value) {
     let mut out = term::stdout().unwrap();
 
     out.fg(term::color::BRIGHT_BLUE).unwrap();
-    write!(out, "{}", value["name"].as_str().unwrap()).unwrap();
+    write!(out, "{}", value["name"].as_str().unwrap_or("*no name*")).unwrap();
     write!(out, " : ").unwrap();
     out.fg(term::color::GREEN).unwrap();
-    write!(out, "{}", value["type"].as_str().unwrap()).unwrap();
+    write!(out, "{}", value["type"].as_str().unwrap_or("*no type*")).unwrap();
     write!(out, "\n").unwrap();
     out.fg(term::color::CYAN).unwrap();
-    write!(out, "    {}", value["comment"].as_str().unwrap()).unwrap();
+    write!(out,
+           "    {}",
+           value["comment"].as_str().unwrap_or("*no comment*"))
+            .unwrap();
 
     out.reset().unwrap();
 }
@@ -71,6 +74,17 @@ fn find_needle_in_haystack<'a>(search: &str,
             if hay_map.get("name").cloned() ==
                Some(String(search.to_string())) {
                 vec![haystack]
+            } else if hay_map
+                          .get("type")
+                          .cloned()
+                          .and_then(|typen| {
+                                        typen
+                                            .as_str()
+                                            .map(|types| {
+                                                     types.contains(search)
+                                                 })
+                                    }) == Some(true) {
+                vec![haystack]
             } else {
                 hay_map
                     .iter()
@@ -92,6 +106,7 @@ fn find_in_documentation(search: &str, doc_path: &Path) {
     if let Ok(docs) = read_documentation(doc_path) {
         let results = find_needle_in_haystack(search, &docs);
         for result in results {
+            println!();
             print_value(result);
         }
     }
