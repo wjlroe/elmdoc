@@ -2,7 +2,12 @@
 name = "elmdoc"
 version = "0.1.1"
 authors = ["William Roe <git@wjlr.org.uk>"]
+description = "A tool for searching Elm docs offline"
+license = "MIT"
+homepage = "https://github.com/wjlroe/elmdoc"
+documentation = "https://github.com/wjlroe/elmdoc"
+repository = "https://github.com/wjlroe/elmdoc"
 
 [dependencies]
 serde_json = "1.0.2"
-term = "*"
+term = "0.4.5"
