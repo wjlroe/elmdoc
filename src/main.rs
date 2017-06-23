@@ -15,9 +15,10 @@ fn run_on_all_the_documentation(dir: &Path, cb: &Fn(&Path)) {
             if path.is_dir() {
                 run_on_all_the_documentation(&path, cb);
             } else {
-                if let Some(filename) = path.file_name().and_then(|name| {
-                    name.to_str()
-                }) {
+                if let Some(filename) = path.file_name().and_then(
+                    |name| name.to_str(),
+                )
+                {
                     if filename == "documentation.json" {
                         cb(&path);
                     }
@@ -27,9 +28,12 @@ fn run_on_all_the_documentation(dir: &Path, cb: &Fn(&Path)) {
     }
 }
 
-fn print_value(value: &Value) {
+fn print_value(doc_name: &str, value: &Value) {
     let mut out = term::stdout().unwrap();
 
+    out.fg(term::color::BRIGHT_YELLOW).unwrap();
+    write!(out, "{}:", doc_name).unwrap();
+    write!(out, "\n").unwrap();
     out.fg(term::color::BRIGHT_BLUE).unwrap();
     write!(out, "{}", value["name"].as_str().unwrap_or("*no name*")).unwrap();
     write!(out, " : ").unwrap();
@@ -37,10 +41,11 @@ fn print_value(value: &Value) {
     write!(out, "{}", value["type"].as_str().unwrap_or("*no type*")).unwrap();
     write!(out, "\n").unwrap();
     out.fg(term::color::CYAN).unwrap();
-    write!(out,
-           "    {}",
-           value["comment"].as_str().unwrap_or("*no comment*"))
-            .unwrap();
+    write!(
+        out,
+        "    {}",
+        value["comment"].as_str().unwrap_or("*no comment*")
+    ).unwrap();
 
     out.reset().unwrap();
 }
@@ -65,25 +70,21 @@ fn go_into_arrays<'a>(search: &str, value: &'a Value) -> Vec<&'a Value> {
     }
 }
 
-fn find_needle_in_haystack<'a>(search: &str,
-                               haystack: &'a Value)
-                               -> Vec<&'a Value> {
+fn find_needle_in_haystack<'a>(
+    search: &str,
+    haystack: &'a Value,
+) -> Vec<&'a Value> {
     use serde_json::Value::*;
     match *haystack {
         Object(ref hay_map) => {
             if hay_map.get("name").cloned() ==
-               Some(String(search.to_string())) {
+                Some(String(search.to_string()))
+            {
                 vec![haystack]
-            } else if hay_map
-                          .get("type")
-                          .cloned()
-                          .and_then(|typen| {
-                                        typen
-                                            .as_str()
-                                            .map(|types| {
-                                                     types.contains(search)
-                                                 })
-                                    }) == Some(true) {
+            } else if hay_map.get("type").cloned().and_then(|typen| {
+                typen.as_str().map(|types| types.contains(search))
+            }) == Some(true)
+            {
                 vec![haystack]
             } else {
                 hay_map
@@ -102,12 +103,39 @@ fn find_needle_in_haystack<'a>(search: &str,
     }
 }
 
+fn doc_name_from_path(path: &Path) -> Option<String> {
+    let components = path.iter().rev();
+    if let (Some(pkgname), Some(org)) =
+        (
+            components.clone().nth(2).and_then(|c| c.to_str()),
+            components.clone().nth(3).and_then(|c| c.to_str()),
+        )
+    {
+        Some(format!("{}/{}", org, pkgname))
+    } else {
+        None
+    }
+}
+
+#[test]
+fn test_doc_name_from_path() {
+    assert_eq!(None, doc_name_from_path(Path::new("")));
+    let example =
+        Path::new("elm-stuff/packages/elm-lang/core/5.1.1/documentation.json");
+    assert_eq!(
+        Some(String::from("elm-lang/core")),
+        doc_name_from_path(&example)
+    );
+}
+
 fn find_in_documentation(search: &str, doc_path: &Path) {
     if let Ok(docs) = read_documentation(doc_path) {
+        let doc_name =
+            doc_name_from_path(doc_path).unwrap_or(String::from("unknown"));
         let results = find_needle_in_haystack(search, &docs);
         for result in results {
             println!();
-            print_value(result);
+            print_value(&doc_name, result);
         }
     }
 }
@@ -117,10 +145,10 @@ fn search_for(search: &str) -> Result<(), Box<Error>> {
     println!("");
 
     let cwd = env::current_dir()?;
-    run_on_all_the_documentation(&cwd,
-                                 &|doc_path| {
-                                     find_in_documentation(search, doc_path)
-                                 });
+    run_on_all_the_documentation(
+        &cwd,
+        &|doc_path| find_in_documentation(search, doc_path),
+    );
     Ok(())
 }
 
