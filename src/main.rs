@@ -142,7 +142,6 @@ fn find_in_documentation(search: &str, doc_path: &Path) {
 
 fn search_for(search: &str) -> Result<(), Box<Error>> {
     println!("Searching for: {}", search);
-    println!("");
 
     let cwd = env::current_dir()?;
     run_on_all_the_documentation(
