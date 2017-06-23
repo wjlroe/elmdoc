@@ -1,6 +1,6 @@
 [package]
 name = "elmdoc"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["William Roe <git@wjlr.org.uk>"]
 description = "A tool for searching Elm docs offline"
 license = "MIT"
