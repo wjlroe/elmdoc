@@ -11,8 +11,8 @@ using? Elmdoc. That's how.
 (This will no doubt be easier when this is released properly, but for now...)
 
 1. Get you a [Rust installed](https://rustup.rs/)
-2. Clone this repository
-3. `cargo install` -- now you have an `elmdoc`
+1. Ensure `$HOME/.cargo/bin` is on your `$PATH`
+1. `cargo install elmdoc` -- now you have an `elmdoc`
 
 ## Usage
 
